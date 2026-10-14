@@ -52,7 +52,8 @@
           ${field('a-name', 'איך לקרוא לך? (לא חובה)', 'text', 'autocomplete="given-name" maxlength="40"')}
           ${field('a-email', 'דוא"ל', 'email', 'autocomplete="email" dir="ltr" required')}
           ${field('a-pass', 'סיסמה (לפחות 8 תווים)', 'password', 'autocomplete="new-password" dir="ltr" minlength="8" required')}
-          <label class="consent"><input type="checkbox" id="a-ok" required><span>קראתי את <a href="legal/terms.html" target="_blank" rel="noopener">תנאי השימוש</a> ואת <a href="legal/privacy.html" target="_blank" rel="noopener">מדיניות הפרטיות</a> והם מקובלים עליי. אני ההורה או האפוטרופוס של הילדים שאוסיף לחשבון.</span></label>
+          <label class="consent"><input type="checkbox" id="a-ok" required><span>אני ההורה או האפוטרופוס של הילדים שאוסיף לחשבון. קראתי את <a href="legal/terms.html" target="_blank" rel="noopener">תנאי השימוש</a> ואת <a href="legal/privacy.html" target="_blank" rel="noopener">מדיניות הפרטיות</a> והם מקובלים עליי, כולל שמירת פרטי הילדים ונתוני התרגול שלהם אצל ספקים מחוץ לישראל, כמתואר במדיניות.</span></label>
+          <p class="notice">אין חובה חוקית למסור את הפרטים, אבל בלעדיהם אי אפשר לפתוח חשבון. הם משמשים רק להפעלת השירות ולא לפרסום, ואפשר לעיין בהם, לתקן ולמחוק אותם בכל עת.</p>
           <p class="form-err" role="alert" hidden></p>
           <button class="btn block" type="submit">יצירת החשבון</button>
           <button class="link" type="button" data-sw="login">כבר יש לנו חשבון — כניסה</button>`;
@@ -109,7 +110,30 @@
   }
   async function afterLogin() {
     try { await C.pull(); } catch (e) { console.warn(e); }
+    await ensureConsent();
     go('family');
+  }
+  // אם התנאים או מדיניות הפרטיות עודכנו מאז ההסכמה — מבקשים אישור מחדש
+  async function ensureConsent() {
+    if (!C.user || !C.client) return;
+    let row = null;
+    try { const r = await C.client.from('parents').select('terms_version,privacy_version').eq('id', C.user.id).maybeSingle(); row = r.data; } catch (e) { return; }
+    if (!row || (row.terms_version === HM.LEGAL.terms && row.privacy_version === HM.LEGAL.privacy)) return;
+    await new Promise((resolve) => {
+      const box = el(`<form class="stack" novalidate><h2>עדכנו את המסמכים</h2><p>תנאי השימוש או מדיניות הפרטיות עודכנו מאז שאישרתם אותם. כדי להמשיך צריך לקרוא ולאשר את הגרסה החדשה.</p>
+        <label class="consent"><input type="checkbox" id="rc-ok"><span>קראתי את <a href="legal/terms.html" target="_blank" rel="noopener">תנאי השימוש</a> ואת <a href="legal/privacy.html" target="_blank" rel="noopener">מדיניות הפרטיות</a> המעודכנים והם מקובלים עליי.</span></label>
+        <p class="form-err" role="alert" hidden></p><button class="btn block" type="submit">אישור והמשך</button>
+        <p class="notice">מי שלא מסכים לשינוי יכול להוריד את המידע ולמחוק את החשבון בניהול המשפחה.</p></form>`);
+      sheet(box, resolve);
+      box.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!$('#rc-ok', box).checked) return errBox(box, 'צריך לסמן את תיבת האישור.');
+        try {
+          await C.client.from('parents').update({ terms_version: HM.LEGAL.terms, privacy_version: HM.LEGAL.privacy, consented_at: new Date().toISOString() }).eq('id', C.user.id);
+          box.closest('.sheet-bg').remove(); resolve();
+        } catch (err) { errBox(box, C.heError(err)); }
+      });
+    });
   }
 
   /* ================= מי לומד עכשיו? ================= */
@@ -138,7 +162,7 @@
       kids.forEach((k) => {
         const t = HM.THEMES[k.theme] || HM.THEMES[HM.defaultTheme(k.gender)];
         const lv = ST().levelOf(k.xp || 0).level;
-        const b = el(`<button class="kid" style="--p:${t.p};--p-l:${t.pl}"><span class="kid-av">${k.avatar}</span><b>${esc(k.name)}</b><small>${k.setupDone ? `רמה ${lv}` : 'חדש בחשבוניה'}</small></button>`);
+        const b = el(`<button class="kid" style="--p:${t.p};--p-l:${t.pl}"><span class="kid-av" aria-hidden="true">${k.avatar}</span><b>${esc(k.name)}</b><small>${k.setupDone ? `רמה ${lv}` : 'חדש בחשבוניה'}</small></button>`);
         b.addEventListener('click', () => { HM.sfx('tap'); pinSheet(k); });
         grid.appendChild(b);
       });
@@ -181,7 +205,7 @@
       <h2>היי ${esc(k.name)}! מה הקוד שלך?</h2>
       <div class="pin-dots" aria-live="polite">${'<i></i>'.repeat(4)}</div>
       <p class="form-err" role="alert" hidden></p>
-      <div class="keypad pin-pad">${['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'del'].map((d) => (d === '' ? '<span></span>' : `<button class="key${d === 'del' ? ' fn' : ''}" data-d="${d}" aria-label="${d === 'del' ? 'מחיקה' : d}">${d === 'del' ? I('backspace') : d}</button>`)).join('')}</div>
+      <div class="keypad pin-pad">${['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'del'].map((d) => (d === '' ? '<span></span>' : `<button class="key${d === 'del' ? ' fn' : ''}" data-d="${d}" aria-label="${d === 'del' ? 'מחיקת ספרה' : d}">${d === 'del' ? I('backspace') : d}</button>`)).join('')}</div>
       <p class="muted tiny">שכחת את הקוד? ההורים יכולים לקבוע קוד חדש בניהול המשפחה.</p></div>`);
     const close = sheet(box);
     const dots = $$('.pin-dots i', box);
@@ -229,6 +253,20 @@
     });
   }
   App.openManage = openManage;
+  function parentGate(cb) {
+    if (!C.user) return cb();
+    if (C.gateOpen()) return cb();
+    const box = el(`<form class="stack" novalidate><h2>אישור הורה</h2><p class="muted">כדי להמשיך צריך את סיסמת ההורה.</p>
+      <label class="fld" for="pg-pass"><span>סיסמה</span><input id="pg-pass" type="password" dir="ltr" autocomplete="current-password"></label>
+      <p class="form-err" role="alert" hidden></p><button class="btn block" type="submit">המשך</button></form>`);
+    const close = sheet(box);
+    setTimeout(() => $('#pg-pass', box).focus(), 80);
+    box.addEventListener('submit', async (e) => {
+      e.preventDefault(); const btn = $('button', box); busy(btn, true);
+      try { await C.verifyPassword($('#pg-pass', box).value); close(); cb(); } catch (err) { busy(btn, false); errBox(box, err.message); }
+    });
+  }
+  App.parentGate = parentGate;
 
   function screenManage(params) {
     HM.applyTheme('ocean');
@@ -262,6 +300,7 @@
     if (params && params.add) setTimeout(() => childForm(null, renderList), 200);
     $('[data-out]', s).addEventListener('click', async () => { try { await C.signOut(); } catch (e) { /* */ } ST().clearCloud(); go(ST().current() ? 'home' : 'welcome'); });
     $('[data-export]', s).addEventListener('click', () => HM.exportData());
+    // ניהול המשפחה כבר מאחורי שער הסיסמה
     $('[data-pass]', s).addEventListener('click', () => {
       const box = el(`<form class="stack" novalidate><h2>סיסמה חדשה</h2><label class="fld" for="np"><span>לפחות 8 תווים</span><input id="np" type="password" dir="ltr" autocomplete="new-password"></label><p class="form-err" role="alert" hidden></p><button class="btn block" type="submit">שמירה</button></form>`);
       const close = sheet(box);
@@ -286,12 +325,13 @@
     let close;
     function render() {
       box.innerHTML = `<h2>${k ? 'עריכת פרטים' : 'הוספת ילד או ילדה'}</h2>
-        <label class="fld" for="c-name"><span>שם פרטי</span><input id="c-name" type="text" maxlength="20" autocomplete="off" value="${esc(st.name)}"></label>
+        <label class="fld" for="c-name"><span>שם פרטי</span><input id="c-name" type="text" maxlength="20" autocomplete="off" value="${esc(st.name)}" aria-describedby="c-note"></label>
+        <p class="notice" id="c-note">מספיק שם פרטי או כינוי. המגדר משמש רק כדי לפנות לילד בלשון הנכונה.</p>
         <div><span class="fld-l">הפנייה בתוך האפליקציה</span><div class="seg"><button type="button" data-g="f" class="${st.gender === 'f' ? 'on' : ''}">בת</button><button type="button" data-g="m" class="${st.gender === 'm' ? 'on' : ''}">בן</button></div></div>
         <div><span class="fld-l">דמות</span><div class="pick-grid" style="grid-template-columns:repeat(6,minmax(0,1fr));gap:6px">${HM.AVATARS.map((a) => `<button type="button" class="pick avatar-pick ${st.avatar === a ? 'on' : ''}" data-a="${a}" style="font-size:28px;padding:6px">${a}</button>`).join('')}</div></div>
         ${k ? '' : `<label class="fld" for="c-pin"><span>קוד כניסה — 4 ספרות שהילד יזכור</span><input id="c-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" dir="ltr" autocomplete="off"></label>`}
         <p class="form-err" role="alert" hidden></p>
-        <button class="btn block" type="submit">${k ? 'שמירה' : 'הוספה למשפחה'}</button>`;
+        <button class="btn block" type="submit">${k ? 'שמירה' : 'הוספה למשפחה'}</button>${legalFoot()}`;
       $('#c-name', box).addEventListener('input', (e) => (st.name = e.target.value));
       $$('[data-g]', box).forEach((b) => b.addEventListener('click', () => { st.name = $('#c-name', box).value; st.gender = b.dataset.g; render(); }));
       $$('[data-a]', box).forEach((b) => b.addEventListener('click', () => { st.name = $('#c-name', box).value; st.avatar = b.dataset.a; render(); }));
@@ -332,8 +372,20 @@
   }
 
   /* ---------- הורדת כל המידע (זכות עיון) ---------- */
-  HM.exportData = function () {
-    const out = { app: 'חשבוניה', exportedAt: new Date().toISOString(), account: C.user ? { email: C.user.email, created_at: C.user.created_at } : null, children: ST().all().map((p) => Object.assign({ id: p.id, name: p.name, gender: p.gender, avatar: p.avatar }, C.payload ? C.payload(p) : p)) };
+  HM.exportData = async function () {
+    const out = { app: 'חשבוניה', exportedAt: new Date().toISOString(), account: null, consent: null, children: [] };
+    if (C.user && C.client) {
+      try {
+        await C.flush();
+        const { data: par } = await C.client.from('parents').select('display_name,terms_version,privacy_version,consented_at,created_at').eq('id', C.user.id).maybeSingle();
+        out.account = { email: C.user.email, created_at: C.user.created_at, display_name: par ? par.display_name : null };
+        out.consent = par ? { terms_version: par.terms_version, privacy_version: par.privacy_version, consented_at: par.consented_at } : null;
+        const rows = await C.listChildren();
+        out.children = rows.map((r) => ({ id: r.id, name: r.name, gender: r.gender, avatar: r.avatar, has_pin: !!r.pin_hash, updated_at: r.updated_at, progress: r.data }));
+      } catch (e) { toast(C.heError(e), 'close'); return; }
+    } else {
+      out.children = ST().all().map((p) => Object.assign({ id: p.id, name: p.name, gender: p.gender, avatar: p.avatar }, C.payload ? C.payload(p) : p));
+    }
     try {
       const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
@@ -357,7 +409,12 @@
     try { sess = await withTimeout(C.session(), 6000); } catch (e) { sess = null; }
     if (recovering) return go('auth', { mode: 'newpass' });
     if (sess) {
-      try { await withTimeout(C.pull(), 6000); } catch (e) { /* בלי אינטרנט — עובדים מהמכשיר */ }
+      try { await withTimeout(C.pull(), 6000); }
+      catch (e) {
+        // חיבור לא תקף (למשל החשבון נמחק במכשיר אחר) — מנקים את נתוני המשפחה מהמכשיר
+        if (/jwt|token|401|403|not authenticated|invalid/i.test(String(e && e.message))) { try { await C.client.auth.signOut({ scope: 'local' }); } catch (x) { /* */ } ST().clearCloud(); return go('welcome'); }
+      }
+      ensureConsent();
       const cur = ST().current();
       if (cur && cur.cloud && ST().isUnlocked(cur.id)) {
         HM.applyTheme(cur.theme);

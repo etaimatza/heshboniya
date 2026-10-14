@@ -104,7 +104,10 @@
     const s = window.speechSynthesis;
     if (s.speaking && !(opts && opts.force)) { s.cancel(); return true; }
     s.cancel();
-    const u = new SpeechSynthesisUtterance(opts && opts.plain ? html : HM.speechText(html));
+    let text = opts && opts.plain ? html : HM.speechText(html);
+    // שם הילד לא נשלח לשירות ההקראה (מדיניות פרטיות, סעיף 8)
+    if (p && p.name && p.name.length > 1) text = text.split(p.name).join('');
+    const u = new SpeechSynthesisUtterance(text);
     u.lang = v.lang || 'he-IL'; u.voice = v;
     const slow = p && p.settings && p.settings.rate === 'slow';
     const natural = NATURAL.test(v.name);

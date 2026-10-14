@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>הצהרת נגישות - חשבוניה</title>
+<meta name="description" content="הצהרת הנגישות של חשבוניה: רמת ההנגשה, ההתאמות שבוצעו ואיך פונים בנושא נגישות.">
+<meta name="doc-version" content="2026-10-14">
+<style>
+:root { --ink: #12304f; --muted: #4c6580; --link: #155bb0; --bg: #ffffff; --soft: #f5f9ff; --line: #d5e0ec; }
+* { box-sizing: border-box; }
+html { scroll-padding-top: 16px; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: Rubik, Heebo, "Arial Hebrew", Arial, system-ui, sans-serif; font-size: 18px; line-height: 1.7; -webkit-text-size-adjust: 100%; }
+.skip { position: absolute; inset-inline-start: 12px; top: -80px; background: var(--link); color: #fff; padding: 10px 16px; border-radius: 10px; z-index: 10; font-weight: 700; text-decoration: none; }
+.skip:focus { top: 12px; }
+.wrap { max-width: 760px; margin: 0 auto; padding: 0 20px; }
+.site { background: var(--soft); }
+header.site { border-bottom: 1px solid var(--line); }
+footer.site { border-top: 1px solid var(--line); margin-top: 48px; padding-bottom: 12px; }
+nav ul { list-style: none; margin: 0; padding: 12px 0; display: flex; flex-wrap: wrap; gap: 4px 20px; }
+nav li { margin: 0; }
+nav a { display: inline-block; padding: 8px 0; }
+nav a[aria-current="page"] { font-weight: 700; color: var(--ink); text-decoration: none; }
+main { padding: 28px 0 8px; }
+main:focus { outline: none; }
+h1 { font-size: 2rem; line-height: 1.25; margin: 0 0 6px; }
+h2 { font-size: 1.4rem; line-height: 1.3; margin: 2.2em 0 .5em; }
+p, ul, ol { margin: 0 0 1em; }
+ul, ol { padding-inline-start: 1.4em; }
+li { margin-bottom: .4em; }
+a { color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 3px solid var(--link); outline-offset: 3px; border-radius: 4px; }
+.version { color: var(--muted); font-size: .95rem; margin-bottom: 1.6em; }
+@media (max-width: 520px) { body { font-size: 17px; } h1 { font-size: 1.65rem; } }
+@media print { .skip, header.site, footer.site { display: none; } body { font-size: 12pt; } a { color: inherit; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">דילוג לתוכן</a>
+<header class="site">
+  <div class="wrap">
+    <nav aria-label="מסמכים">
+      <ul>
+        <li><a href="../index.html">חזרה לחשבוניה</a></li>
+        <li><a href="terms.html">תנאי שימוש</a></li>
+        <li><a href="privacy.html">מדיניות פרטיות</a></li>
+        <li><a href="accessibility.html" aria-current="page">הצהרת נגישות</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+<div class="wrap">
+<h1>הצהרת נגישות</h1>
+<p class="version">גרסה 2026-10-14 · עודכנה ביום 14 באוקטובר 2026</p>
+
+<h2 id="who">1. מי אנחנו</h2>
+<p>חשבוניה היא אפליקציה חינמית לתרגול חשבון לכיתה ה׳, שמופעלת על ידי [שם מפעיל השירות] ([מספר עוסק או ח.פ. - אם יש]), [כתובת למשלוח דואר]. חשוב לנו שכל ילד וכל הורה יוכלו להשתמש בה בקלות ובעצמאות. ההצהרה נכתבה לפי תקנה 35 לתקנות שוויון זכויות לאנשים עם מוגבלות (התאמות נגישות לשירות), התשע״ג-2013.</p>
+
+<h2 id="level">2. רמת ההנגשה</h2>
+<p>האפליקציה הונגשה בהתאם לתקן הישראלי ת״י 5568, המבוסס על הנחיות WCAG 2.0 ברמה AA, ועומדת בדרישותיו באופן מלא. אנחנו עובדים גם לפי WCAG 2.1, ובודקים ומעדכנים את ההנגשה באופן שוטף.</p>
+<p>בסעיף 4 מפורטות נקודות שכדאי לשים לב אליהן, ולצד כל אחת הדרך לקבל עזרה.</p>
+
+<h2 id="done">3. מה עשינו כדי להנגיש</h2>
+<ul>
+  <li><strong>שפה וכיוון:</strong> האפליקציה כתובה בעברית, מימין לשמאל, ושפת העמוד מוגדרת כך שקוראי מסך יקראו אותה נכון.</li>
+  <li><strong>מקלדת:</strong> כל הכפתורים, השאלות וההגדרות ניתנים להפעלה במקלדת, כולל שאלות הצביעה, הסימון על ישר המספרים והסידור לפי הסדר. את התשובות מקלידים ישירות, שולחים ב-Enter, וסוגרים חלונות ב-Escape.</li>
+  <li><strong>מיקוד נראה:</strong> הרכיב שעליו נמצא המיקוד מסומן במסגרת בולטת.</li>
+  <li><strong>קוראי מסך:</strong> לכפתורים שמוצגים כסמל בלבד יש שם מילולי, הודעות המשוב על תשובה מוקראות אוטומטית, ולהמחשות הגרפיות יש תיאור טקסטואלי.</li>
+  <li><strong>משוב במילים:</strong> תשובה נכונה או שגויה מסומנת בטקסט ולא רק בצבע, ואחרי טעות מוצגים רמז ופתרון מלא.</li>
+  <li><strong>ניגודיות:</strong> הטקסט והכפתורים מוצגים בניגודיות שעומדת בתקן, בכל ערכות הצבעים.</li>
+  <li><strong>הגדלה:</strong> אפשר להגדיל את התצוגה בדפדפן ובטלפון. האפליקציה לא חוסמת הגדלה.</li>
+  <li><strong>הפחתת תנועה:</strong> כשבמכשיר מוגדרת העדפה להפחתת תנועה, האנימציות והקונפטי לא מוצגים.</li>
+  <li><strong>צלילים:</strong> אפשר לכבות את צלילי המשוב בהגדרות. אין באפליקציה סרטונים, ואין צליל ארוך שמתחיל לפעול לבד.</li>
+  <li><strong>הקראה בקול:</strong> שאלות והסברים יכולים להיות מוקראים בעברית, בקצב רגיל או איטי (ראו סעיף 4).</li>
+  <li><strong>בלי לחץ זמן:</strong> בתרגול הרגיל אין הגבלת זמן.</li>
+  <li><strong>טפסים:</strong> לכל שדה בטופסי ההרשמה, ההתחברות ויצירת הפרופיל יש תווית גלויה, והודעות שגיאה מוצגות במילים.</li>
+</ul>
+
+<h2 id="notes">4. נקודות לתשומת לב</h2>
+<ul>
+  <li><strong>הקראה בקול:</strong> ההקראה משתמשת בקולות העבריים של הדפדפן, ומופיעה רק בדפדפנים שיש בהם קול עברי איכותי, כמו Microsoft Edge. הקולות מופעלים על ידי יצרני הדפדפנים. מי שזקוק להקראה בדפדפן אחר יכול להשתמש בקורא המסך של המכשיר (למשל NVDA, VoiceOver או TalkBack), ומוזמן לפנות אלינו בכל קושי.</li>
+  <li><strong>שאלות על המחשה גרפית:</strong> חלק מהשאלות בודקות את היכולת לקרוא שבר מצויר, דיאגרמה או צורה. בשאלות כאלה התיאור הטקסטואלי מזהה את ההמחשה בלי לחשוף את התשובה. מי שזקוק לדרך אחרת לתרגל את הנושאים האלה מוזמן לפנות אלינו, ונציע חלופה.</li>
+  <li><strong>אתגר 60 שניות:</strong> זה משחק מהירות, והזמן הוא חלק מהמשחק. הוא רשות, וכל שאר התרגול בלי הגבלת זמן.</li>
+</ul>
+
+<h2 id="compat">5. תאימות</h2>
+<p>האפליקציה תוכננה לעבודה בגרסאות העדכניות של הדפדפנים Chrome, Edge, Safari ו-Firefox, במחשב ובטלפון (Windows, macOS, Android ו-iOS), ולשימוש עם מקלדת ועם טכנולוגיות מסייעות.</p>
+
+<h2 id="physical">6. שירות פיזי</h2>
+<p>חשבוניה היא שירות מקוון בלבד. אין לה משרד, סניף או מקום אחר שמקבלים בו קהל.</p>
+
+<h2 id="exemptions">7. פטורים</h2>
+<p>[לבחור אחת משתי האפשרויות ולמחוק את השנייה.
+אפשרות א, אם המפעיל עוסק פטור: "[שם מפעיל השירות] הוא עוסק פטור, ולכן האפליקציה פטורה מחובת ההנגשה לפי תקנה 35ו(ז) לתקנות שוויון זכויות לאנשים עם מוגבלות (התאמות נגישות לשירות), התשע״ג-2013. למרות הפטור, הנגשנו את האפליקציה כמתואר בהצהרה הזו."
+אפשרות ב, בכל מקרה אחר: "לא ניתנו לאפליקציה פטורים או הקלות מחובות הנגישות."]</p>
+
+<h2 id="contact">8. פנייה בנושא נגישות</h2>
+<p>נתקלתם בקושי? נשמח לעזור ולתקן.</p>
+<p>איש או אשת הקשר לנגישות: [רכז/ת נגישות]. דוא"ל: [כתובת דוא"ל ליצירת קשר]. טלפון: [טלפון - אם מפרסמים].</p>
+<p>כדי שנוכל לעזור מהר, כדאי לכתוב בפנייה מה ניסיתם לעשות, באיזה מסך או שאלה, באיזה מכשיר ודפדפן, ואם השתמשתם בטכנולוגיה מסייעת (כמו קורא מסך).</p>
+<p>כל פנייה בנושא נגישות מטופלת בעדיפות, ונחזור אליכם בהקדם.</p>
+
+<h2 id="updated">9. עדכון ההצהרה</h2>
+<p>ההצהרה עודכנה לאחרונה ביום 14 באוקטובר 2026, ומתעדכנת עם כל שינוי באפליקציה.</p>
+</div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <nav aria-label="קישורים בתחתית העמוד">
+      <ul>
+        <li><a href="../index.html">חשבוניה</a></li>
+        <li><a href="terms.html">תנאי שימוש</a></li>
+        <li><a href="privacy.html">מדיניות פרטיות</a></li>
+        <li><a href="accessibility.html" aria-current="page">הצהרת נגישות</a></li>
+      </ul>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

@@ -90,7 +90,7 @@
       reveal() { answers.forEach((a, i) => { vals[i] = String(HM.round(a)); displays[i].classList.remove('no'); displays[i].classList.add('ok'); }); locked = true; render(); },
       lock() { locked = true; render(); },
       retry() { vals.forEach((v, i) => { if (!near(parseFloat(v), answers[i])) vals[i] = ''; displays[i].classList.remove('no', 'ok'); }); focus = Math.max(0, vals.findIndex((v) => v === '')); locked = false; render(); },
-      key(k) { if (k === 'Backspace') onKey('del'); else if (k === 'Tab') onKey('next'); else if (k === '.' || k === ',') onKey('.'); else if (/^\d$/.test(k)) onKey(k); },
+      key(k) { if (k === 'Backspace') onKey('del'); else if (k === 'ArrowDown' || k === 'ArrowUp') onKey('next'); else if (k === '.' || k === ',') onKey('.'); else if (/^\d$/.test(k)) onKey(k); },
     };
   }
 
@@ -166,7 +166,7 @@
       reveal() { const a = q.answer; vals.w = mixed ? String(a.w || 0) : ''; vals.n = String(a.n); vals.d = String(a.d); locked = true; render(); },
       lock() { locked = true; render(); },
       retry() { vals.w = ''; vals.n = ''; vals.d = ''; focus = 0; locked = false; fields.forEach((f) => boxes[f].classList.remove('ok', 'no')); render(); },
-      key(k) { if (k === 'Backspace') onKey('del'); else if (['Tab', '/', '.', ' ', 'ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].indexOf(k) >= 0) onKey('next'); else if (/^\d$/.test(k)) onKey(k); },
+      key(k) { if (k === 'Backspace') onKey('del'); else if (['/', '.', 'ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].indexOf(k) >= 0) onKey('next'); else if (/^\d$/.test(k)) onKey(k); },
     };
   }
 
@@ -204,13 +204,13 @@
     const placed = Array(n).fill(null);
     let locked = false;
     const slotsEl = h('div', 'order-slots');
-    const slotEls = placed.map((_, i) => { const s = h('div', 'oslot'); s.dataset.n = i + 1; s.addEventListener('click', () => { if (locked || placed[i] === null) return; HM.sfx('tap'); placed[i] = null; render(); }); slotsEl.appendChild(s); return s; });
+    const slotEls = placed.map((_, i) => { const s = h('button', 'oslot'); s.type = 'button'; s.dataset.n = i + 1; s.setAttribute('aria-label', `מקום ${i + 1} — ריק`); s.addEventListener('click', () => { if (locked || placed[i] === null) return; HM.sfx('tap'); placed[i] = null; render(); }); slotsEl.appendChild(s); return s; });
     const poolEl = h('div', 'order-pool');
     const chips = pool.map((ii) => { const b = h('button', 'choice', q.items[ii]); b.type = 'button'; b.dataset.i = ii; b.addEventListener('click', () => { if (locked) return; const e = placed.indexOf(null); if (e < 0) return; HM.sfx('tap'); placed[e] = ii; render(); }); poolEl.appendChild(b); return b; });
     area.appendChild(h('div', 'order-dir', 'ראשון <b>1</b> ← … ← אחרון <b>' + n + '</b>'));
     area.appendChild(slotsEl); area.appendChild(poolEl);
     function render() {
-      slotEls.forEach((s, i) => { s.innerHTML = placed[i] === null ? '' : q.items[placed[i]]; s.classList.toggle('filled', placed[i] !== null); });
+      slotEls.forEach((s, i) => { s.innerHTML = placed[i] === null ? '' : q.items[placed[i]]; s.classList.toggle('filled', placed[i] !== null); s.setAttribute('aria-label', placed[i] === null ? `מקום ${i + 1} — ריק` : `מקום ${i + 1}: ${s.textContent.trim()} (לחיצה מחזירה)`); });
       chips.forEach((c) => c.classList.toggle('used', placed.indexOf(+c.dataset.i) >= 0));
       api.changed();
     }
@@ -238,19 +238,25 @@
       g.innerHTML = `<path d="M${x},${y - 10} l-11,-20 h22 z" class="${cls || 'f-c'} s-ink" stroke-width="2.5" stroke-linejoin="round"/><circle cx="${x}" cy="${y}" r="7" class="${cls || 'f-c'} s-ink" stroke-width="2.5"/>`;
       svg.appendChild(g); return g;
     }
-    svg.querySelectorAll('.nl-hit').forEach((r) => r.addEventListener('click', () => {
-      if (locked) return; HM.sfx('tap');
-      if (marker) marker.remove();
-      marker = place(r); val = +r.dataset.v; api.changed();
-    }));
-    const hitFor = (v) => Array.from(svg.querySelectorAll('.nl-hit')).find((r) => near(+r.dataset.v, v));
+    const hits = Array.from(svg.querySelectorAll('.nl-hit'));
+    let idx = -1;
+    const live = h('p', 'sr-only'); live.setAttribute('aria-live', 'polite');
+    const choose = (r) => { if (locked) return; HM.sfx('tap'); if (marker) marker.remove(); marker = place(r); val = +r.dataset.v; idx = hits.indexOf(r); live.textContent = `הסימון על קו מספר ${idx + 1} מתוך ${hits.length}`; api.changed(); };
+    hits.forEach((r) => r.addEventListener('click', () => choose(r)));
+    // מקלדת וכפתורים: הזזת הסימון ימינה ושמאלה (הישר עולה משמאל לימין)
+    const move = (d) => { if (!hits.length) return; choose(hits[Math.max(0, Math.min(hits.length - 1, (idx < 0 ? Math.floor(hits.length / 2) - d : idx) + d))]); };
+    const ctrls = h('div', 'a11y-ctrls');
+    const bl = h('button', 'btn sm sec', '◀ שמאלה'); bl.type = 'button'; bl.addEventListener('click', () => move(-1));
+    const br = h('button', 'btn sm sec', 'ימינה ▶'); br.type = 'button'; br.addEventListener('click', () => move(1));
+    ctrls.appendChild(bl); ctrls.appendChild(br); area.appendChild(ctrls); area.appendChild(live);
+    const hitFor = (v) => hits.find((r) => near(+r.dataset.v, v));
     return {
       canCheck: () => val !== null,
       check() { const ok = near(val, q.answer); if (!ok && marker) marker.querySelectorAll('path,circle').forEach((e) => e.setAttribute('class', 'f-r s-ink')); else if (marker) marker.querySelectorAll('path,circle').forEach((e) => e.setAttribute('class', 'f-g s-ink')); return ok; },
       reveal() { locked = true; const r = hitFor(q.answer); if (r) place(r, 'f-g'); },
       lock() { locked = true; },
-      retry() { if (marker) marker.remove(); marker = null; val = null; locked = false; api.changed(); },
-      key() {},
+      retry() { if (marker) marker.remove(); marker = null; val = null; idx = -1; locked = false; api.changed(); },
+      key(k) { if (k === 'ArrowRight') move(1); else if (k === 'ArrowLeft') move(-1); else if (k === 'Home') choose(hits[0]); else if (k === 'End') choose(hits[hits.length - 1]); },
     };
   }
 
@@ -264,7 +270,10 @@
     const wrap = h('div', 'shade-wrap', svgHtml);
     const info = h('div', 'shade-count');
     const clear = h('button', 'link', 'ניקוי'); clear.type = 'button';
-    const row = h('div', 'row-c'); row.appendChild(info); row.appendChild(clear);
+    const addB = h('button', 'btn sm sec', '+ צביעת חלק'); addB.type = 'button';
+    const subB = h('button', 'btn sm sec', '− ביטול חלק'); subB.type = 'button';
+    const row = h('div', 'row-c a11y-ctrls'); row.appendChild(addB); row.appendChild(subB); row.appendChild(info); row.appendChild(clear);
+    info.setAttribute('aria-live', 'polite');
     wrap.appendChild(row);
     area.appendChild(wrap);
     const parts = Array.from(wrap.querySelectorAll('.part'));
@@ -285,6 +294,9 @@
     const end = () => { painting = null; };
     window.addEventListener('pointerup', end); window.addEventListener('pointercancel', end);
     clear.addEventListener('click', () => { if (locked) return; parts.forEach((p) => p.classList.remove('picked')); render(); });
+    const addOne = () => { if (locked) return; const p = parts.find((x) => !x.classList.contains('picked')); if (p) { setPart(p, true); render(); } };
+    const subOne = () => { if (locked) return; const on = parts.filter((x) => x.classList.contains('picked')); if (on.length) { setPart(on[on.length - 1], false); render(); } };
+    addB.addEventListener('click', addOne); subB.addEventListener('click', subOne);
     render();
     return {
       canCheck: () => count() > 0,
@@ -292,7 +304,7 @@
       reveal() { locked = true; parts.forEach((p, i) => p.classList.toggle('picked', i < q.answer)); render(); info.textContent = `צריך לצבוע ${q.answer} מתוך ${total}`; },
       lock() { locked = true; },
       retry() { locked = false; render(); },
-      key() {},
+      key(k) { if (k === '+' || k === 'ArrowUp' || k === 'ArrowRight') addOne(); else if (k === '-' || k === 'ArrowDown' || k === 'ArrowLeft' || k === 'Backspace') subOne(); },
       destroy() { window.removeEventListener('pointerup', end); window.removeEventListener('pointercancel', end); },
     };
   }

@@ -72,7 +72,7 @@
 
   const speakBtn = (getHtml) => {
     const p = P();
-    if (!HM.canSpeak() || (p && p.settings.tts === false)) return null;
+    if (!HM.canSpeak() || !p || !p.settings.tts) return null;
     const b = el(`<button class="icon-btn speak" aria-label="הקראה">${I('speaker')}</button>`);
     b.addEventListener('click', () => HM.speak(getHtml()));
     return b;
@@ -102,7 +102,7 @@
         foot = el(`<button class="btn block">יוצאים לדרך!</button>`);
         foot.addEventListener('click', () => { HM.sfx('whoosh'); st.step = 1; render(); });
       } else if (st.step === 1) {
-        body.appendChild(el(`<div class="stack"><div class="mascot-tip"><div class="mt-m">${HM.art.mascot('happy')}</div><div class="bubble">היי! אני <b>נומי</b>, ואני אלווה אותך במסע.</div></div><h1>איך קוראים לך?</h1><input class="field" id="onb-name" maxlength="16" autocomplete="off" placeholder="השם שלי" value="${esc(st.name)}"><p class="muted tiny center">השם יופיע בהסברים ובתרגילים.</p></div>`));
+        body.appendChild(el(`<div class="stack"><div class="mascot-tip"><div class="mt-m">${HM.art.mascot('happy')}</div><div class="bubble">היי! אני <b>נומי</b>, ואני אלווה אותך במסע.</div></div><h1><label for="onb-name">איך קוראים לך?</label></h1><input class="field" id="onb-name" maxlength="16" autocomplete="off" placeholder="השם שלי" value="${esc(st.name)}"><p class="muted tiny center">השם יופיע בהסברים ובתרגילים.</p></div>`));
         foot = el(`<button class="btn block" ${st.name.trim() ? '' : 'disabled'}>המשך</button>`);
         const inp = $('#onb-name', body);
         inp.addEventListener('input', () => { st.name = inp.value; foot.disabled = !st.name.trim(); });
@@ -120,7 +120,7 @@
       } else if (st.step === 3) {
         const themeIds = Object.keys(HM.THEMES).sort((a, b) => (HM.THEMES[a].g === st.gender ? 0 : 1) - (HM.THEMES[b].g === st.gender ? 0 : 1));
         body.appendChild(el(`<div class="stack"><h1>${setupP ? `היי ${esc(st.name)}! ` : ''}${g('בחר', 'בחרי')} דמות וצבע</h1>
-          <div class="pick-grid c3" style="grid-template-columns:repeat(6,minmax(0,1fr));gap:8px">${HM.AVATARS.map((a) => `<button class="pick avatar-pick ${st.avatar === a ? 'on' : ''}" data-a="${a}" aria-label="דמות">${a}</button>`).join('')}</div>
+          <div class="pick-grid c3" style="grid-template-columns:repeat(6,minmax(0,1fr));gap:8px">${HM.AVATARS.map((a) => `<button class="pick avatar-pick ${st.avatar === a ? 'on' : ''}" data-a="${a}" aria-label="${HM.avatarName(a)}" aria-pressed="${st.avatar === a}">${a}</button>`).join('')}</div>
           <p class="muted" style="margin-top:6px">${g('הצבעים של האפליקציה שלך', 'הצבעים של האפליקציה שלך')}:</p>
           <div class="themes">${themeIds.map((id) => { const t = HM.THEMES[id]; return `<button class="theme-c ${st.theme === id ? 'on' : ''}" data-t="${id}"><span class="theme-sw"><i style="background:${t.p}"></i><i style="background:${t.s}"></i><i style="background:${t.a}"></i></span>${t.name}</button>`; }).join('')}</div></div>`));
         $$('[data-a]', body).forEach((b) => b.addEventListener('click', () => { HM.sfx('tap'); st.avatar = b.dataset.a; render(); }));
@@ -466,6 +466,8 @@
   }
 
   /* ================= תרגול ================= */
+  const AV_NAMES = { '🦊': 'שועל', '🐼': 'פנדה', '🦁': 'אריה', '🐯': 'נמר', '🐨': 'קואלה', '🐸': 'צפרדע', '🦄': 'חד-קרן', '🐙': 'תמנון', '🐵': 'קוף', '🐶': 'כלב', '🐱': 'חתול', '🐰': 'ארנב', '🦉': 'ינשוף', '🐧': 'פינגווין', '🐲': 'דרקון', '🤖': 'רובוט', '🐬': 'דולפין', '🦖': 'דינוזאור' };
+  HM.avatarName = (a) => AV_NAMES[a] || 'דמות';
   const PRAISE = (g) => ['מעולה!', 'כל הכבוד!', g('אלוף!', 'אלופה!'), 'בול!', 'מצוין!', 'נכון מאוד!', 'יופי של תשובה!', g('תותח!', 'תותחית!'), 'מדויק!', g('איזה גאון!', 'איזו גאונה!')];
   function pickPraise(c) { return HM.pick(PRAISE(c.g)); }
 
@@ -629,7 +631,7 @@
     App.keyHandler = (e) => {
       if (fbEl) { if (e.key === 'Enter') { e.preventDefault(); $('.btn', fbEl).click(); } return; }
       if (e.key === 'Enter') { e.preventDefault(); doCheck(); return; }
-      if (e.key === 'Tab' || e.key === ' ' || e.key === '/') e.preventDefault();
+      if (e.key === '/') e.preventDefault(); // Tab ורווח נשארים לניווט במקלדת
       if (S.ctl && S.ctl.key) S.ctl.key(e.key);
     };
     App.cleanup = () => { if (fbEl) fbEl.remove(); if (S.ctl && S.ctl.destroy) S.ctl.destroy(); };
@@ -802,7 +804,7 @@
   }
   function sampleVoice() {
     const p = P();
-    HM.speak(`היי ${p.name}! ככה אני ${p.gender === 'f' ? 'מקריאה' : 'מקריא'} לך. כמה זה שלושה רבעים מתוך עשרים? חמש-עשרה!`, { plain: true, force: true });
+    HM.speak(`היי! ככה אני ${p.gender === 'f' ? 'מקריאה' : 'מקריא'} לך. כמה זה שלושה רבעים מתוך עשרים? חמש-עשרה!`, { plain: true, force: true });
   }
   const autoRead = (html) => { const p = P(); if (p && p.settings.autoRead && p.settings.tts !== false && HM.canSpeak()) setTimeout(() => HM.speak(html, { force: true }), 350); };
 
@@ -820,12 +822,7 @@
       <div class="sec-title"><h2>הגדרות</h2></div>
       <div class="card set-list">
         <div class="set-row"><div class="grow"><b>צלילים</b><small>צלילי הצלחה ומקלדת</small></div><input type="checkbox" class="switch" id="set-sound" ${p.settings.sound !== false ? 'checked' : ''} aria-label="צלילים"></div>
-        ${HM.canSpeak() ? `<div class="set-row"><div class="grow"><b>הקראה בקול</b><small>כפתור רמקול ליד כל הסבר ושאלה</small></div><input type="checkbox" class="switch" id="set-tts" ${p.settings.tts !== false ? 'checked' : ''} aria-label="הקראה"></div>
-        <div class="set-row"><div class="grow"><b>הקראה אוטומטית</b><small>כל שאלה והסבר יוקראו מיד כשהם מופיעים</small></div><input type="checkbox" class="switch" id="set-auto" ${p.settings.autoRead ? 'checked' : ''} aria-label="הקראה אוטומטית"></div>
-        <div class="set-row" style="flex-wrap:wrap"><div class="grow" style="min-width:180px"><b>הקול המקריא</b><small>${voiceNote(p)}</small></div>
-          <select class="sel" id="set-voice" aria-label="קול"><option value="">אוטומטי — ${p.gender === 'f' ? 'קול נשי' : 'קול גברי'} אם יש</option>${HM.hebrewVoices().map((v) => `<option value="${esc(v.name)}" ${p.settings.voice === v.name ? 'selected' : ''}>${esc(v.name.replace(/^Microsoft /, '').replace(/ - Hebrew.*$/, ''))}${v.gender ? (v.gender === 'f' ? ' · נשי' : ' · גברי') : ''}</option>`).join('')}</select>
-          <div class="seg"><button data-rate="normal" class="${p.settings.rate !== 'slow' ? 'on' : ''}">רגיל</button><button data-rate="slow" class="${p.settings.rate === 'slow' ? 'on' : ''}">לאט</button></div>
-          <button class="btn sm sec" data-try>${I('speaker')}השמעה</button></div>` : ''}
+
         <div class="set-row"><div class="grow"><b>יעד יומי</b><small>נקודות ביום</small></div><div class="seg">${[30, 50, 100].map((v) => `<button data-goal="${v}" class="${(p.goal || 50) === v ? 'on' : ''}">${v}</button>`).join('')}</div></div>
         <div class="set-row" style="flex-direction:column;align-items:stretch"><div><b>צבעי האפליקציה</b></div><div class="themes">${themeIds.map((id) => { const t = HM.THEMES[id]; return `<button class="theme-c ${p.theme === id ? 'on' : ''}" data-t="${id}"><span class="theme-sw"><i style="background:${t.p}"></i><i style="background:${t.s}"></i><i style="background:${t.a}"></i></span>${t.name}</button>`; }).join('')}</div></div>
         <div class="set-row"><div class="grow"><b>פרטים אישיים</b><small>שם, דמות ותחומי עניין</small></div><button class="btn sm sec" data-edit>${I('pencil')}עריכה</button></div>
@@ -836,13 +833,10 @@
         ${HM.cloud && HM.cloud.enabled ? '' : '<!--'}<div class="set-row"><div class="grow"><b>חשבון המשפחה</b><small>${p.cloud ? 'ההתקדמות נשמרת בענן ומסונכרנת בין המכשירים' : 'עכשיו ההתקדמות נשמרת רק במכשיר הזה. הורים יכולים להירשם ולשמור אותה בענן'}</small></div><button class="btn sm sec" data-account>${I('user')}${p.cloud ? 'ניהול' : 'הרשמה להורים'}</button></div>${HM.cloud && HM.cloud.enabled ? '' : '-->'}
       </div>
       <p class="center" style="margin-top:18px"><button class="link" data-del style="color:var(--bad-d)">מחיקת הפרופיל</button></p>
+      <p class="legal-links center">${HM.legalLinks ? HM.legalLinks() : ''}</p>
     </div>`);
     $('#set-sound', s).addEventListener('change', (e) => { ST().update((x) => (x.settings.sound = e.target.checked)); HM.sfx('tap'); });
-    const ttsSw = $('#set-tts', s); if (ttsSw) ttsSw.addEventListener('change', (e) => ST().update((x) => (x.settings.tts = e.target.checked)));
-    const auto = $('#set-auto', s); if (auto) auto.addEventListener('change', (e) => ST().update((x) => (x.settings.autoRead = e.target.checked)));
-    const sel = $('#set-voice', s); if (sel) sel.addEventListener('change', () => { ST().update((x) => (x.settings.voice = sel.value)); sampleVoice(); });
-    $$('[data-rate]', s).forEach((b) => b.addEventListener('click', () => { ST().update((x) => (x.settings.rate = b.dataset.rate)); $$('[data-rate]', s).forEach((y) => y.classList.toggle('on', y === b)); sampleVoice(); }));
-    const tr = $('[data-try]', s); if (tr) tr.addEventListener('click', sampleVoice);
+
     $$('[data-goal]', s).forEach((b) => b.addEventListener('click', () => { ST().update((x) => (x.goal = +b.dataset.goal)); HM.sfx('tap'); go('profile', {}, { keepScroll: true }); }));
     $$('[data-t]', s).forEach((b) => b.addEventListener('click', () => { ST().update((x) => (x.theme = b.dataset.t)); HM.applyTheme(b.dataset.t); HM.sfx('tap'); go('profile', {}, { keepScroll: true }); }));
     $('[data-report]', s).addEventListener('click', () => go('parents'));
@@ -866,9 +860,9 @@
     function render() {
       const g = (m, f) => (st.gender === 'f' ? f : m);
       box.innerHTML = `<h2>עריכת פרטים</h2>
-        <input class="field" id="ed-name" maxlength="16" value="${esc(st.name)}" aria-label="שם">
+        <label class="fld" for="ed-name"><span>שם</span><input id="ed-name" maxlength="16" value="${esc(st.name)}"></label>
         <div class="seg" style="align-self:center"><button data-g="m" class="${st.gender === 'm' ? 'on' : ''}">בן</button><button data-g="f" class="${st.gender === 'f' ? 'on' : ''}">בת</button></div>
-        <div class="pick-grid" style="grid-template-columns:repeat(6,minmax(0,1fr));gap:6px">${HM.AVATARS.map((a) => `<button class="pick avatar-pick ${st.avatar === a ? 'on' : ''}" data-a="${a}" style="font-size:30px;padding:6px">${a}</button>`).join('')}</div>
+        <div class="pick-grid" style="grid-template-columns:repeat(6,minmax(0,1fr));gap:6px">${HM.AVATARS.map((a) => `<button class="pick avatar-pick ${st.avatar === a ? 'on' : ''}" data-a="${a}" aria-label="${HM.avatarName(a)}" aria-pressed="${st.avatar === a}" style="font-size:30px;padding:6px">${a}</button>`).join('')}</div>
         <p class="muted tiny">תחומי עניין (עד 3):</p>
         <div class="int-grid">${HM.INTERESTS.map((x) => `<button class="int ${st.interests.indexOf(x.id) >= 0 ? 'on' : ''}" data-i="${x.id}">${HM.art.INT_ICONS[x.icon]}<span>${x.label}</span></button>`).join('')}</div>
         <button class="btn block" data-save>${g('שמור', 'שמרי')}</button>`;
@@ -947,9 +941,9 @@
     let tab = (params && params.tab) || 'progress';
     const s = el(`<div class="screen parents">
       <div class="topbar"><button class="icon-btn" data-back aria-label="חזרה">${I('back')}</button><span class="title grow">להורים</span>${HM.cloud && HM.cloud.user ? `<button class="btn sm sec" data-manage>${I('user')}ניהול המשפחה</button>` : ''}</div>
-      ${kids.length > 1 ? `<div class="kid-chips" role="tablist" aria-label="בחירת ילד">${kids.map((x) => `<button data-kid="${x.id}" class="${x.id === p.id ? 'on' : ''}"><span>${x.avatar}</span>${esc(x.name)}</button>`).join('')}</div>` : ''}
+      ${kids.length > 1 ? `<div class="kid-chips" role="tablist" aria-label="בחירת ילד">${kids.map((x) => `<button role="tab" aria-selected="${x.id === p.id}" data-kid="${x.id}" class="${x.id === p.id ? 'on' : ''}"><span aria-hidden="true">${x.avatar}</span>${esc(x.name)}</button>`).join('')}</div>` : ''}
       <div class="seg par-tabs" role="tablist">
-        <button data-tab="progress">התקדמות</button><button data-tab="how">איך זה עובד</button><button data-tab="material">החומר</button><button data-tab="practice">כמה לתרגל</button>
+        <button role="tab" data-tab="progress">התקדמות</button><button role="tab" data-tab="how">איך זה עובד</button><button role="tab" data-tab="material">החומר</button><button role="tab" data-tab="practice">כמה לתרגל</button>
       </div>
       <div data-body class="stack" style="margin-top:14px"></div></div>`);
     $('[data-back]', s).addEventListener('click', () => { ST().peek(null); go((params && params.from) || (P() ? 'home' : 'family')); });
@@ -957,7 +951,7 @@
     $$('[data-kid]', s).forEach((b) => b.addEventListener('click', () => { HM.sfx('tap'); go('parents', { tab, peek: b.dataset.kid, from: params && params.from }); }));
     const body = $('[data-body]', s);
     function render() {
-      $$('[data-tab]', s).forEach((b) => b.classList.toggle('on', b.dataset.tab === tab));
+      $$('[data-tab]', s).forEach((b) => { b.classList.toggle('on', b.dataset.tab === tab); b.setAttribute('aria-selected', b.dataset.tab === tab); });
       body.innerHTML = '';
       ({ progress: tabProgress, how: tabHow, material: tabMaterial, practice: tabPractice })[tab](body);
     }
@@ -1024,8 +1018,21 @@
       const log = (p.log || []).slice(0, 8);
       const modeName = { practice: 'תרגול', review: 'חזרה על טעויות', mixed: 'תרגול מעורב', sprint: 'אתגר 60 שניות' };
       box.appendChild(el(`<div class="card"><h3>תרגולים אחרונים</h3>${log.length ? `<table class="report log"><tbody>${log.map((x) => `<tr><td>${x.l && HM.LESSONS[x.l] ? HM.LESSONS[x.l].title : modeName[x.m] || ''}<br><span class="muted tiny">${relDay(x.t)}, ${new Date(x.t).toTimeString().slice(0, 5)}</span></td><td class="num" dir="ltr">${x.c}/${x.n}</td><td class="num muted">${Math.max(1, mins(x.sec))} דק׳</td><td class="num" dir="ltr">${x.ma != null ? Math.round(x.ma) + '%' : ''}</td></tr>`).join('')}</tbody></table>` : '<p class="muted">עוד אין תרגולים ביומן.</p>'}</div>`));
+      if (HM.canSpeak()) {
+        const tts = el(`<div class="card set-list"><h3>הקראה בקול ל${nm}</h3>
+          <div class="set-row"><div class="grow"><b>כפתור הקראה</b><small>כפתור רמקול ליד כל הסבר ושאלה</small></div><input type="checkbox" class="switch" id="pt-tts" ${p.settings.tts ? 'checked' : ''} aria-label="כפתור הקראה"></div>
+          <div class="set-row"><div class="grow"><b>הקראה אוטומטית</b><small>כל שאלה והסבר יוקראו מיד כשהם מופיעים</small></div><input type="checkbox" class="switch" id="pt-auto" ${p.settings.autoRead ? 'checked' : ''} aria-label="הקראה אוטומטית"></div>
+          <div class="set-row" style="flex-wrap:wrap"><div class="grow" style="min-width:180px"><b>הקול והקצב</b><small>${voiceNote(p)}</small></div><select class="sel" id="pt-voice" aria-label="קול"><option value="">אוטומטי לפי מגדר</option>${HM.hebrewVoices().map((v) => `<option value="${esc(v.name)}" ${p.settings.voice === v.name ? 'selected' : ''}>${esc(v.name.replace(/^Microsoft /, '').replace(/ - Hebrew.*$/, ''))}</option>`).join('')}</select><div class="seg"><button data-rate="normal" class="${p.settings.rate !== 'slow' ? 'on' : ''}">רגיל</button><button data-rate="slow" class="${p.settings.rate === 'slow' ? 'on' : ''}">לאט</button></div><button class="btn sm sec" data-try>${I('speaker')}השמעה</button></div>
+          <p class="notice">ההקראה משתמשת בקול האיכותי של הדפדפן. ב-Microsoft Edge הקול מופק בשרתי Microsoft, ולכן הטקסט שמוקרא נשלח אליה. השם של הילד לא מוקרא. פרטים ב<a href="legal/privacy.html" target="_blank" rel="noopener">מדיניות הפרטיות</a>, סעיף 8.</p></div>`);
+        $('#pt-tts', tts).addEventListener('change', (e) => ST().update((x) => (x.settings.tts = e.target.checked)));
+        $('#pt-auto', tts).addEventListener('change', (e) => ST().update((x) => { x.settings.autoRead = e.target.checked; if (e.target.checked) x.settings.tts = true; }));
+        $('#pt-voice', tts).addEventListener('change', (e) => { ST().update((x) => (x.settings.voice = e.target.value)); sampleVoice(); });
+        $$('[data-rate]', tts).forEach((b) => b.addEventListener('click', () => { ST().update((x) => (x.settings.rate = b.dataset.rate)); $$('[data-rate]', tts).forEach((y) => y.classList.toggle('on', y === b)); sampleVoice(); }));
+        $('[data-try]', tts).addEventListener('click', sampleVoice);
+        box.appendChild(tts);
+      }
       const foot = el(`<div class="card par-foot"><p class="muted tiny">${p.cloud ? 'הנתונים נשמרים בחשבון המשפחה ומסונכרנים בין המכשירים.' : 'הנתונים נשמרים רק בדפדפן במכשיר הזה.'}</p><div class="row-c" style="flex-wrap:wrap"><button class="btn sm sec" data-export>${I('list')}הורדת כל המידע</button><span class="legal-links">${HM.legalLinks ? HM.legalLinks() : ''}</span></div></div>`);
-      $('[data-export]', foot).addEventListener('click', () => HM.exportData && HM.exportData());
+      $('[data-export]', foot).addEventListener('click', () => (HM.cloud && HM.cloud.user && App.parentGate ? App.parentGate(() => HM.exportData()) : HM.exportData()));
       box.appendChild(foot);
     }
 
@@ -1041,7 +1048,7 @@
         sec('bulb', 'כשטועים', `טעות ראשונה — רמז שמכוון בלי לגלות את התשובה. טעות שנייה — התשובה הנכונה ופתרון מלא שלב אחר שלב. כל טעות נשמרת בלשונית <b>טעויות</b>; תשובה נכונה בחזרה מוציאה אותה מהרשימה. אחרי שתי טעויות ברצף מוצע לחזור להסבר.`),
         sec('user', 'התאמה אישית', `הפנייה לפי שם ומגדר בכל משפט, ערכת צבעים לבחירה, שאלות מילוליות שנבנות סביב תחומי העניין שנבחרו (מכדורגל ועד קיי-פופ, הארי פוטר וסקווישים), והנושאים שלומדים כרגע בכיתה מופיעים ראשונים.`),
         sec('trophy', 'מוטיבציה', `נקודות, רמות, תגים, יעד יומי, רצף ימים ואתגר 60 שניות — כדי לבנות הרגל של תרגול קצר וקבוע, בלי תחרות מול ילדים אחרים.`),
-        sec('lock', 'פרטיות', `אין הרשמה ואין חשבון. כל הנתונים נשמרים <b>רק בדפדפן במכשיר הזה</b> ולא נשלחים לשום מקום. מחיקת נתוני הדפדפן תמחק גם את ההתקדמות. אפשר כמה פרופילים (כמה ילדים) על אותו מכשיר.`),
+        sec('lock', 'פרטיות', `בחשבון משפחה ההתקדמות נשמרת אצל ספק התשתית Supabase, בשרתים בפרנקפורט שבגרמניה, וגם בדפדפן במכשיר כדי שהתרגול יעבוד בלי אינטרנט. רק ההורה שפתח את החשבון רואה את המידע, ואפשר להוריד אותו ולמחוק אותו בכל רגע. בלי חשבון — הכול נשמר רק בדפדפן במכשיר הזה. אין פרסומות, אין עוגיות ואין כלי מעקב. הפרטים המלאים ב<a href="legal/privacy.html" target="_blank" rel="noopener">מדיניות הפרטיות</a>.`),
       ].join('');
     }
 

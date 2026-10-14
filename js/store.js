@@ -7,10 +7,10 @@
   HM.THEMES = {
     berry:  { name: 'פטל',      g: 'f', p: '#e23d7d', pd: '#b3245c', pl: '#ffdbe9', pll: '#fff2f7', s: '#8b5cf6', sd: '#6a3fd6', sl: '#ece4ff', a: '#ffbf1f', ad: '#d48c00', al: '#fff1cc', ink: '#3b1534', ink2: '#7a4d6e', ink3: '#b190a8', paper: '#fff7fa' },
     lilac:  { name: 'לילך',     g: 'f', p: '#8b5cf6', pd: '#6a3fd6', pl: '#ebe2ff', pll: '#f7f3ff', s: '#ec4899', sd: '#be2f77', sl: '#ffe0f0', a: '#ffc21a', ad: '#d48c00', al: '#fff3cc', ink: '#2b1a4d', ink2: '#5e4d82', ink3: '#a194bd', paper: '#faf7ff' },
-    sunset: { name: 'שקיעה',    g: 'f', p: '#ff6b57', pd: '#d9473a', pl: '#ffe1dc', pll: '#fff4f2', s: '#d6409f', sd: '#a92a7b', sl: '#fde0f1', a: '#ffc21a', ad: '#d48c00', al: '#fff3cc', ink: '#3d1a1a', ink2: '#7c4f4a', ink3: '#b8958f', paper: '#fff8f5' },
-    ocean:  { name: 'אוקיינוס', g: 'm', p: '#1f7ae0', pd: '#155bb0', pl: '#dcecff', pll: '#eef6ff', s: '#13b3a4', sd: '#0c877c', sl: '#d6f6f2', a: '#ffbb1a', ad: '#d48c00', al: '#fff1cf', ink: '#12304f', ink2: '#40597a', ink3: '#7d93ad', paper: '#f5f9ff' },
-    space:  { name: 'חלל',      g: 'm', p: '#4f46e5', pd: '#3730b8', pl: '#e2e1ff', pll: '#f3f2ff', s: '#06b6d4', sd: '#0789a1', sl: '#d4f6fc', a: '#ffc21a', ad: '#d48c00', al: '#fff3cc', ink: '#1a1b45', ink2: '#4b4d7c', ink3: '#9294bd', paper: '#f6f6ff' },
-    jungle: { name: "ג'ונגל",   g: 'm', p: '#16a34a', pd: '#0f7a37', pl: '#d9f5e3', pll: '#effbf3', s: '#f97316', sd: '#c2560b', sl: '#ffe8d6', a: '#ffc21a', ad: '#d48c00', al: '#fff3cc', ink: '#13321f', ink2: '#456b53', ink3: '#8fab99', paper: '#f6fcf7' },
+    sunset: { name: 'שקיעה',    g: 'f', p: '#ff6b57', pd: '#c0392b', pl: '#ffe1dc', pll: '#fff4f2', s: '#d6409f', sd: '#a92a7b', sl: '#fde0f1', a: '#ffc21a', ad: '#d48c00', al: '#fff3cc', ink: '#3d1a1a', ink2: '#7c4f4a', ink3: '#b8958f', paper: '#fff8f5' },
+    ocean:  { name: 'אוקיינוס', g: 'm', p: '#1f7ae0', pd: '#155bb0', pl: '#dcecff', pll: '#eef6ff', s: '#13b3a4', sd: '#0a6e65', sl: '#d6f6f2', a: '#ffbb1a', ad: '#d48c00', al: '#fff1cf', ink: '#12304f', ink2: '#40597a', ink3: '#7d93ad', paper: '#f5f9ff' },
+    space:  { name: 'חלל',      g: 'm', p: '#4f46e5', pd: '#3730b8', pl: '#e2e1ff', pll: '#f3f2ff', s: '#06b6d4', sd: '#066c80', sl: '#d4f6fc', a: '#ffc21a', ad: '#d48c00', al: '#fff3cc', ink: '#1a1b45', ink2: '#4b4d7c', ink3: '#9294bd', paper: '#f6f6ff' },
+    jungle: { name: "ג'ונגל",   g: 'm', p: '#16a34a', pd: '#0f7a37', pl: '#d9f5e3', pll: '#effbf3', s: '#f97316', sd: '#a8490a', sl: '#ffe8d6', a: '#ffc21a', ad: '#d48c00', al: '#fff3cc', ink: '#13321f', ink2: '#456b53', ink3: '#8fab99', paper: '#f6fcf7' },
   };
   HM.defaultTheme = (gender) => (gender === 'f' ? 'berry' : 'ocean');
 
@@ -65,7 +65,7 @@
       daily: { date: todayKey(), xp: 0 },
       lessons: {}, mistakes: [], badges: {},
       stats: { answered: 0, correct: 0, sessions: 0, perfects: 0, seconds: 0, sprintBest: 0, fixed: 0, learned: 0 },
-      settings: { sound: true, tts: true },
+      settings: { sound: true, tts: false }, // הקראה כבויה עד שההורה מפעיל (מדיניות פרטיות, סעיף 8)
     };
   }
 
