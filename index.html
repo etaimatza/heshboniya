@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>חשבוניה</title>
+<meta name="description" content="אפליקציה אישית ללימוד ותרגול מתמטיקה לכיתה ה׳ — לפי תכנית הלימודים">
+<meta name="theme-color" content="#f5f9ff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="חשבוניה">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div id="app"></div>
+<noscript><p style="padding:24px;font-family:sans-serif">כדי להשתמש בחשבוניה צריך להפעיל JavaScript בדפדפן.</p></noscript>
+<script src="js/util.js"></script>
+<script src="js/viz.js"></script>
+<script src="js/curriculum.js"></script>
+<script src="js/content/naturals-ops.js"></script>
+<script src="js/content/naturals-more.js"></script>
+<script src="js/content/data.js"></script>
+<script src="js/content/fractions-a.js"></script>
+<script src="js/content/fractions-b.js"></script>
+<script src="js/content/decimals-a.js"></script>
+<script src="js/content/decimals-b.js"></script>
+<script src="js/content/geometry-a.js"></script>
+<script src="js/content/geometry-b.js"></script>
+<script src="js/art.js"></script>
+<script src="js/store.js"></script>
+<script src="js/fx.js"></script>
+<script src="js/engine.js"></script>
+<script src="vendor/supabase.js"></script>
+<script src="js/cloud.js"></script>
+<script src="js/app.js"></script>
+<script src="js/account.js"></script>
+<script>
+  // התקנה למסך הבית ועבודה בלי אינטרנט (רק כשהאתר מוגש מהרשת)
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(function () {});
+</script>
+</body>
+</html>
